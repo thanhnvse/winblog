@@ -6,7 +6,7 @@ import ScrollToTop from '@/components/layout/ScrollToTop.vue'
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col m-5 p-8 bg-white rounded-2xl">
+  <div class="min-h-screen flex flex-col m-5 p-8 bg-light rounded-2xl">
     <AppHeader />
     <main class="flex-1">
       <RouterView />

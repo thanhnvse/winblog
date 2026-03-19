@@ -207,8 +207,8 @@ if (!technology.value) {
     </section>
 
     <!-- Divider -->
-    <div class="py-16 md:py-20 px-3" style="background: rgb(34, 20, 41);">
-      <div class="max-w-5xl mx-auto px-4">
+    <div class="max-w-4xl mx-auto py-12 md:py-20 px-3" style="background: rgb(34, 20, 41);">
+      <div class="max-w-3xl mx-auto px-4">
         <hr class="border-white" />
       </div>
     </div>

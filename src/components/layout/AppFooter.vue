@@ -38,7 +38,7 @@ function getImageUrl(filename: string) {
               class="h-8 md:h-10 w-8 md:w-10 rounded-full object-cover"
             />
             <img
-              :src="getImageUrl('logo-name.png')"
+              :src="getImageUrl('logo-name-removebg.png')"
               alt="Logo"
               class="h-10 w-auto mx-auto md:mx-0"
             />

@@ -129,7 +129,7 @@ onMounted(() => {
   <header
     ref="headerRef"
     class="sticky top-0 w-full z-50 transition-colors duration-300"
-    :class="isMenuOpen ? 'bg-white' : (isScrolled ? 'bg-transparent' : 'bg-white')"
+    :class="isMenuOpen ? 'bg-light' : (isScrolled ? 'bg-transparent' : 'bg-light')"
   >
     <div class="max-w-7xl mx-auto px-4 sm:px-6">
       <div class="flex items-center justify-between h-16 md:h-20">
@@ -142,7 +142,7 @@ onMounted(() => {
               class="h-8 md:h-10 w-8 md:w-10 rounded-full object-cover"
             />
             <img
-              :src="getImageUrl('logo-name.png')"
+              :src="getImageUrl('logo-name-removebg.png')"
               alt="Logo name"
               class="h-5 md:h-6 w-auto"
             />
@@ -196,7 +196,7 @@ onMounted(() => {
               background: `conic-gradient(#fd2e35 ${progress}%, #e5e7eb ${progress}%)`
             }"
           >
-            <div class="absolute inset-[2px] rounded-full bg-[#f7f3f0]" />
+            <div class="absolute inset-[2px] rounded-full bg-light" />
           </div>
           <!-- Filled red background (visible at 100%) -->
           <div

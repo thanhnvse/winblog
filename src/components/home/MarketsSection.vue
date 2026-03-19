@@ -44,7 +44,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <section ref="sectionRef" class="section-padding pb-0 bg-primary text-white overflow-hidden">
+  <section ref="sectionRef" class="section-padding pb-0 bg-primary text-white overflow-hidden -mx-8 px-8">
     <!-- Header -->
     <div class="max-w-7xl mx-auto px-4 mb-8">
       <span class="trade-animate inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-xs font-semibold tracking-wider uppercase text-secondary mb-4">
