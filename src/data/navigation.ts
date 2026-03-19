@@ -75,9 +75,10 @@ export const locations: LocationItem[] = [
 ]
 
 export const socialLinks = [
-  { label: 'LinkedIn', url: 'https://www.linkedin.com/company/lollypop-studio/' },
-  { label: 'Instagram', url: 'https://www.instagram.com/lollypop.design/' },
-  { label: 'X', url: 'https://x.com/lollypop_studio' },
-  { label: 'Facebook', url: 'https://www.facebook.com/lollypop.india' },
-  { label: 'Dribbble', url: 'https://dribbble.com/lollypop_studio' },
+  { label: 'LinkedIn', url: 'https://www.linkedin.com/in/thanhnvse' },
+  { label: 'Instagram', url: 'https://www.instagram.com/winng___/' },
+  // { label: 'X', url: 'https://x.com/lollypop_studio' },
+  { label: 'Facebook', url: 'https://www.facebook.com/nguyen.v.thanh.946' },
+  { label: 'GitHub', url: 'https://github.com/thanhnvse' },
+  // { label: 'Dribbble', url: 'https://dribbble.com/lollypop_studio' },
 ]

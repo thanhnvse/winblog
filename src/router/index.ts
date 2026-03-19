@@ -14,7 +14,12 @@ const router = createRouter({
     {
       path: '/technologies',
       name: 'Technologies',
-      component: () => import('@/pages/TechnologiesPage.vue'),
+      component: () => import('@/pages/PostPage.vue'),
+    },
+    {
+      path: '/technologies/:id',
+      name: 'TechnologyDetail',
+      component: () => import('@/pages/PostDetailPage.vue'),
     },
     {
       path: '/economics',

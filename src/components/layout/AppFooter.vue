@@ -11,8 +11,8 @@ function getImageUrl(filename: string) {
   <footer class="py-16 px-4">
     <div class="max-w-6xl mx-auto">
       <!-- Social links -->
-      <div class="mb-16 text-center">
-        <h2 class="text-base font-semibold mb-6">Follow our work</h2>
+      <!-- <div class="mb-16 text-center">
+        <h2 class="text-base font-semibold mb-6">Follow my work</h2>
         <div class="flex flex-wrap justify-center gap-6 md:gap-12">
           <a
             v-for="social in socialLinks"
@@ -25,7 +25,7 @@ function getImageUrl(filename: string) {
             {{ social.label }}
           </a>
         </div>
-      </div>
+      </div> -->
 
       <!-- Bottom section -->
       <div class="flex flex-col md:flex-row gap-10">
@@ -57,7 +57,7 @@ function getImageUrl(filename: string) {
         </div>
 
         <!-- Location links -->
-        <div class="md:w-2/3">
+        <!-- <div class="md:w-2/3">
           <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center md:text-left">
             <div v-for="loc in locations" :key="loc.country">
               <RouterLink :to="loc.to" class="block group">
@@ -71,6 +71,21 @@ function getImageUrl(filename: string) {
                 </p>
               </RouterLink>
             </div>
+          </div>
+        </div> -->
+        <div class="mb-16 mt-8 text-center">
+          <h2 class="text-base font-semibold mb-6">Follow my work</h2>
+          <div class="flex flex-wrap justify-center gap-6 md:gap-12">
+            <a
+              v-for="social in socialLinks"
+              :key="social.label"
+              :href="social.url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-xl md:text-3xl font-extrabold hover:text-secondary transition-colors"
+            >
+              {{ social.label }}
+            </a>
           </div>
         </div>
       </div>
