@@ -85,36 +85,38 @@ export interface ForexRate {
 }
 
 export async function fetchForexRates(): Promise<ForexRate[]> {
-  const currencies = ['USD', 'EUR', 'GBP', 'JPY', 'CNY', 'KRW', 'SGD', 'AUD']
+  const currencies = ['USD', 'EUR', 'CHF', 'JPY', 'CNY', 'KRW', 'SGD', 'AUD']
   const flags: Record<string, string> = {
-    USD: '🇺🇸', EUR: '🇪🇺', GBP: '🇬🇧', JPY: '🇯🇵',
+    USD: '🇺🇸', EUR: '🇪🇺', CHF: '🇨🇭', JPY: '🇯🇵',
     CNY: '🇨🇳', KRW: '🇰🇷', SGD: '🇸🇬', AUD: '🇦🇺',
   }
 
-  // Fetch today's rates and yesterday's for change calculation
-  const yesterday = new Date()
-  yesterday.setDate(yesterday.getDate() - 1)
+  // Get yesterday's date (skip weekends for Frankfurter)
+  const now = new Date()
+  const dayOfWeek = now.getDay()
+  const daysBack = dayOfWeek === 1 ? 3 : dayOfWeek === 0 ? 2 : 1 // Mon→Fri, Sun→Fri
+  const yesterday = new Date(now)
+  yesterday.setDate(yesterday.getDate() - daysBack)
   const yStr = yesterday.toISOString().split('T')[0]
 
-  const [todayData, yesterdayData] = await Promise.all([
+  // Fetch current rates (VND-based) and yesterday's rates from Frankfurter for 1-day change
+  const [todayData, frankfurterYesterday, frankfurterToday] = await Promise.all([
     fetchJSON<any>('https://open.er-api.com/v6/latest/VND', { rates: {} }),
-    fetchJSON<any>(`https://open.er-api.com/v6/latest/VND`, { rates: {} }),
-    // Note: free tier doesn't support historical, so we use Frankfurter for change
+    fetchJSON<any>(
+      `https://api.frankfurter.dev/${yStr}?base=USD&symbols=EUR,CHF,JPY,CNY,KRW,SGD,AUD,VND`,
+      { rates: {} }
+    ),
+    fetchJSON<any>(
+      'https://api.frankfurter.dev/latest?base=USD&symbols=EUR,CHF,JPY,CNY,KRW,SGD,AUD,VND',
+      { rates: {} }
+    ),
   ])
 
-  // If open.er-api works, rates are VND-based (1 VND = X currency)
-  // We need to invert: 1 USD = ? VND
   if (!todayData.rates || Object.keys(todayData.rates).length === 0) return []
 
-  // Also fetch yesterday from Frankfurter for change %
-  const frankfurterYesterday = await fetchJSON<any>(
-    `https://api.frankfurter.dev/${yStr}?base=USD&symbols=EUR,GBP,JPY,CNY,KRW,SGD,AUD`,
-    { rates: {} }
-  )
-  const frankfurterToday = await fetchJSON<any>(
-    'https://api.frankfurter.dev/latest?base=USD&symbols=EUR,GBP,JPY,CNY,KRW,SGD,AUD',
-    { rates: {} }
-  )
+  // Get USD/VND from Frankfurter for proper 1-day comparison
+  const todayUsdVnd = frankfurterToday.rates?.VND || 0
+  const yesterdayUsdVnd = frankfurterYesterday.rates?.VND || 0
 
   const results: ForexRate[] = []
 
@@ -125,18 +127,25 @@ export async function fetchForexRates(): Promise<ForexRate[]> {
     // 1 VND = vndRate currency, so 1 currency = 1/vndRate VND
     const rateToVnd = 1 / vndRate
 
-    // Calculate change from Frankfurter (USD-based cross rates)
+    // Calculate 1-day change for X/VND
     let change = 0
     if (currency === 'USD') {
-      // USD/VND change is hard to get from Frankfurter, approximate
-      change = 0.05
-    } else if (frankfurterToday.rates?.[currency] && frankfurterYesterday.rates?.[currency]) {
-      const todayCross = frankfurterToday.rates[currency]
-      const yesterdayCross = frankfurterYesterday.rates[currency]
-      // Change in cross rate means inverse change for X/VND
-      change = -((todayCross - yesterdayCross) / yesterdayCross) * 100
-      change = Math.round(change * 100) / 100
+      // Direct USD/VND change from Frankfurter
+      if (todayUsdVnd > 0 && yesterdayUsdVnd > 0) {
+        change = ((todayUsdVnd - yesterdayUsdVnd) / yesterdayUsdVnd) * 100
+      }
+    } else {
+      // For other currencies: calculate X/VND today vs yesterday
+      // X/VND = (USD/VND) / (USD/X)
+      const todayCross = frankfurterToday.rates?.[currency]
+      const yesterdayCross = frankfurterYesterday.rates?.[currency]
+      if (todayCross && yesterdayCross && todayUsdVnd && yesterdayUsdVnd) {
+        const todayXvnd = todayUsdVnd / todayCross
+        const yesterdayXvnd = yesterdayUsdVnd / yesterdayCross
+        change = ((todayXvnd - yesterdayXvnd) / yesterdayXvnd) * 100
+      }
     }
+    change = Math.round(change * 100) / 100
 
     results.push({
       pair: `${currency}/VND`,
@@ -221,13 +230,30 @@ export async function fetchStockQuote(symbol: string): Promise<StockQuote | null
     null
   )
   if (!data || !data.c) return null
+
+  let volume = data.v || 0
+
+  // If volume is 0 (market closed), fetch from recent candle data
+  if (volume === 0) {
+    const now = Math.floor(Date.now() / 1000)
+    const from = now - 5 * 86400 // last 5 days to cover weekends
+    const candle = await fetchJSON<any>(
+      `https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=D&from=${from}&to=${now}&token=${FINNHUB_KEY}`,
+      { v: [] }
+    )
+    const volumes = candle.v || []
+    if (volumes.length > 0) {
+      volume = volumes[volumes.length - 1]
+    }
+  }
+
   return {
     symbol,
     name: stockNames[symbol] || symbol,
     price: data.c,
     change: data.d || 0,
     changePercent: data.dp || 0,
-    volume: formatVolume(data.v || 0),
+    volume: formatVolume(volume),
   }
 }
 
@@ -283,7 +309,7 @@ export async function fetchIndexQuote(name: string): Promise<IndexQuote | null> 
   }
 }
 
-// ===== GOLD (CoinGecko for XAU) =====
+// ===== GOLD (gold-api.com + vang.today for VN prices) =====
 export interface GoldPrice {
   type: string
   priceUSD: number
@@ -292,73 +318,101 @@ export interface GoldPrice {
   unit: string
 }
 
+// Mapping vang.today type codes to display names
+const vnGoldTypes: Record<string, string> = {
+  XAUUSD: 'XAU/USD',
+  SJL1L10: 'SJC 9999',
+  SJ9999: 'SJC Nhẫn',
+  DOHNL: 'DOJI HN',
+  DOHCML: 'DOJI HCM',
+  BTSJC: 'Bảo Tín SJC',
+  BT9999NTT: 'Bảo Tín 9999',
+  PQHNVM: 'PNJ HN',
+  PQHN24NTT: 'PNJ 24K',
+}
+
 export async function fetchGoldPrices(): Promise<GoldPrice[]> {
-  // Get current XAU/USD from CoinGecko exchange rates
-  const [data, histData] = await Promise.all([
-    fetchJSON<any>('https://api.coingecko.com/api/v3/exchange_rates', { rates: {} }),
-    // Fetch 2-day BTC history to derive yesterday's gold price
-    fetchJSON<any>(
-      'https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=1&interval=daily',
-      { prices: [] }
-    ),
+  // Fetch real VN gold prices from vang.today (free, no key, CORS enabled)
+  const [vnData, usdVnd] = await Promise.all([
+    fetchJSON<any>('https://www.vang.today/api/prices', { success: false, data: [] }),
+    fetchUsdToVnd(),
   ])
 
-  const usdVnd = await fetchUsdToVnd()
-  const btcToUsd = data.rates?.usd?.value || 0
-  const btcToXau = data.rates?.xau?.value || 0
-  const xauUsd = btcToXau > 0 ? btcToUsd / btcToXau : 2338
+  if (!vnData.success || !vnData.data?.length) return []
 
-  // Calculate 24h change from BTC price movement (gold correlates inversely)
-  const btcPrices: number[][] = histData.prices || []
-  let goldChange = 0
-  if (btcPrices.length >= 2) {
-    const oldBtc = btcPrices[0][1]
-    const newBtc = btcPrices[btcPrices.length - 1][1]
-    // Approximate: gold moves ~5-10% of BTC's inverse movement
-    const btcPctChange = (newBtc - oldBtc) / oldBtc
-    goldChange = -btcPctChange * 0.08 * 100 // rough correlation
+  const results: GoldPrice[] = []
+
+  for (const item of vnData.data) {
+    const code = item.type_code || ''
+    const displayName = vnGoldTypes[code] || code
+
+    if (code === 'XAUUSD') {
+      // World gold price — sell is USD price
+      const priceUSD = item.sell || item.buy || 0
+      const changeUSD = item.change_sell || item.change_buy || 0
+      const changePct = priceUSD > 0 ? (changeUSD / priceUSD) * 100 : 0
+      results.push({
+        type: 'XAU/USD',
+        priceUSD,
+        priceVND: priceUSD * usdVnd,
+        change: Math.round(changePct * 100) / 100,
+        unit: '/oz',
+      })
+    } else {
+      // VN gold — prices in VND
+      const buyVND = item.buy || 0
+      const sellVND = item.sell || 0
+      const avgVND = sellVND || buyVND
+      const changeVND = item.change_sell || item.change_buy || 0
+      const changePct = avgVND > 0 ? (changeVND / avgVND) * 100 : 0
+      const priceUSD = usdVnd > 0 ? avgVND / usdVnd : 0
+
+      results.push({
+        type: displayName,
+        priceUSD: Math.round(priceUSD * 100) / 100,
+        priceVND: avgVND,
+        change: Math.round(changePct * 100) / 100,
+        unit: '/lượng',
+      })
+    }
   }
 
-  // Vietnam gold prices (premium over world price, approximated)
-  const sjcPremium = 1.24
-  const dojiPremium = 1.23
-  const pnjPremium = 1.22
-
-  // Slight variation in change for different gold types
-  return [
-    { type: 'XAU/USD', priceUSD: xauUsd, priceVND: xauUsd * usdVnd, change: Math.round(goldChange * 100) / 100, unit: '/oz' },
-    { type: 'SJC', priceUSD: xauUsd * sjcPremium, priceVND: xauUsd * sjcPremium * usdVnd, change: Math.round((goldChange + 0.12) * 100) / 100, unit: '/lượng' },
-    { type: 'DOJI 9999', priceUSD: xauUsd * dojiPremium, priceVND: xauUsd * dojiPremium * usdVnd, change: Math.round((goldChange + 0.08) * 100) / 100, unit: '/lượng' },
-    { type: 'PNJ 9999', priceUSD: xauUsd * pnjPremium, priceVND: xauUsd * pnjPremium * usdVnd, change: Math.round((goldChange + 0.05) * 100) / 100, unit: '/lượng' },
-    { type: 'Gold 24K', priceUSD: xauUsd * 1.0, priceVND: xauUsd * usdVnd, change: Math.round((goldChange - 0.02) * 100) / 100, unit: '/oz' },
-    { type: 'Gold 18K', priceUSD: xauUsd * 0.75, priceVND: xauUsd * 0.75 * usdVnd, change: Math.round((goldChange - 0.05) * 100) / 100, unit: '/oz' },
-  ]
+  return results
 }
 
 export async function fetchGoldHistory(days: number): Promise<number[]> {
-  // Use bitcoin market chart + exchange rate to derive XAU
+  // Try vang.today historical API (max 30 days)
+  const histDays = Math.min(days, 30)
+  const vnHist = await fetchJSON<any>(
+    `https://www.vang.today/api/prices?type=XAUUSD&days=${histDays}`,
+    { success: false, data: [] }
+  )
+
+  if (vnHist.success && vnHist.data?.length > 1) {
+    // Extract sell prices sorted by time
+    return vnHist.data
+      .sort((a: any, b: any) => (a.update_time || 0) - (b.update_time || 0))
+      .map((item: any) => item.sell || item.buy || 0)
+      .filter((p: number) => p > 0)
+  }
+
+  // Fallback: use gold-api.com current price + BTC pattern for longer ranges
+  const goldData = await fetchJSON<any>('https://api.gold-api.com/price/XAU', { price: 0 })
+  const currentPrice = goldData.price || 0
+  if (currentPrice === 0) return []
+
   const data = await fetchJSON<any>(
     `https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=${days}`,
     { prices: [] }
   )
 
-  const exchangeData = await fetchJSON<any>(
-    'https://api.coingecko.com/api/v3/exchange_rates',
-    { rates: {} }
-  )
-
-  const btcToUsd = exchangeData.rates?.usd?.value || 1
-  const btcToXau = exchangeData.rates?.xau?.value || 1
-  const ratio = btcToXau > 0 ? btcToUsd / btcToXau : 2338
-
-  // Approximate gold history from BTC/USD movement
   const btcPrices: number[] = (data.prices || []).map((p: number[]) => p[1])
   if (!btcPrices.length) return []
 
   const latestBtc = btcPrices[btcPrices.length - 1]
   return btcPrices.map((btcPrice) => {
     const pctChange = (btcPrice - latestBtc) / latestBtc
-    return ratio * (1 + pctChange * 0.05) // Gold is less volatile
+    return currentPrice * (1 + pctChange * 0.05)
   })
 }
 

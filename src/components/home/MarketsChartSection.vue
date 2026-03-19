@@ -173,7 +173,7 @@ function changePercent(current: number, first: number): number {
 </script>
 
 <template>
-  <section class="section-padding bg-primary text-white">
+  <section class="px-4 pt-4 pb-16 bg-primary text-white">
     <!-- Header -->
     <div class="max-w-7xl mx-auto px-4 mb-8">
       <span class="fade-up inline-block px-3 py-1 rounded-full bg-white/10 text-xs font-semibold tracking-wider uppercase text-secondary mb-4">

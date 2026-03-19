@@ -43,18 +43,19 @@ const fallbackCryptos: CryptoPrice[] = [
 ]
 
 const fallbackGolds: GoldPrice[] = [
-  { type: 'XAU/USD', priceUSD: 2338.40, priceVND: 58460000, change: 0.82, unit: '/oz' },
-  { type: 'SJC', priceUSD: 2892.00, priceVND: 72300000, change: 0.45, unit: '/lượng' },
-  { type: 'DOJI 9999', priceUSD: 2876.00, priceVND: 71900000, change: 0.32, unit: '/lượng' },
-  { type: 'PNJ 9999', priceUSD: 2860.00, priceVND: 71500000, change: -0.18, unit: '/lượng' },
-  { type: 'Gold 24K', priceUSD: 2335.00, priceVND: 58375000, change: 0.60, unit: '/oz' },
-  { type: 'Gold 18K', priceUSD: 1751.00, priceVND: 43775000, change: 0.55, unit: '/oz' },
+  { type: 'XAU/USD', priceUSD: 4686.60, priceVND: 117165000, change: -0.29, unit: '/oz' },
+  { type: 'SJC 9999', priceUSD: 7052.00, priceVND: 176300000, change: -0.85, unit: '/lượng' },
+  { type: 'SJC Nhẫn', priceUSD: 6892.00, priceVND: 172300000, change: -0.87, unit: '/lượng' },
+  { type: 'DOJI HN', priceUSD: 6932.00, priceVND: 173300000, change: -0.87, unit: '/lượng' },
+  { type: 'DOJI HCM', priceUSD: 6932.00, priceVND: 173300000, change: -0.87, unit: '/lượng' },
+  { type: 'PNJ HN', priceUSD: 6892.00, priceVND: 172300000, change: -0.87, unit: '/lượng' },
+  { type: 'Bảo Tín SJC', priceUSD: 7052.00, priceVND: 176300000, change: -1.64, unit: '/lượng' },
 ]
 
 const fallbackForex: ForexRate[] = [
   { pair: 'USD/VND', flag: '🇺🇸', rate: 25000, change: 0.12, buy: 24950, sell: 25050 },
   { pair: 'EUR/VND', flag: '🇪🇺', rate: 27125, change: -0.08, buy: 27050, sell: 27200 },
-  { pair: 'GBP/VND', flag: '🇬🇧', rate: 31650, change: 0.24, buy: 31550, sell: 31750 },
+  { pair: 'CHF/VND', flag: '🇨🇭', rate: 28450, change: 0.18, buy: 28390, sell: 28510 },
   { pair: 'JPY/VND', flag: '🇯🇵', rate: 165.8, change: -0.35, buy: 165.2, sell: 166.4 },
   { pair: 'CNY/VND', flag: '🇨🇳', rate: 3452, change: 0.15, buy: 3440, sell: 3464 },
   { pair: 'KRW/VND', flag: '🇰🇷', rate: 18.32, change: 0.42, buy: 18.25, sell: 18.39 },
