@@ -5,21 +5,21 @@ import LatestWork from '@/components/home/LatestWork.vue'
 import MarketsSection from '@/components/home/MarketsSection.vue'
 import MarketsChartSection from '@/components/home/MarketsChartSection.vue'
 import TestimonialSection from '@/components/home/TestimonialSection.vue'
-import IndustriesSection from '@/components/home/IndustriesSection.vue'
+import FootballSection from '@/components/home/FootballSection.vue'
 import StoriesSection from '@/components/home/StoriesSection.vue'
 import CtaSection from '@/components/home/CtaSection.vue'
 </script>
 
 <template>
   <div>
-    <HeroBanner />
-    <ServicesSection />
-    <LatestWork />
-    <MarketsSection />
-    <MarketsChartSection />
+    <HeroBanner id="hero" />
+    <ServicesSection id="services" />
+    <LatestWork id="work" />
+    <MarketsSection id="markets" />
+    <MarketsChartSection id="charts" />
     <!-- <TestimonialSection /> -->
-    <!-- <IndustriesSection /> -->
+    <FootballSection id="football" />
     <!-- <StoriesSection /> -->
-    <CtaSection />
+    <CtaSection id="cta" />
   </div>
 </template>

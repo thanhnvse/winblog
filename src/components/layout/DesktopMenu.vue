@@ -1,59 +1,55 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { RouterLink } from 'vue-router'
-import { menuLinks, menuSecondaryLinks, industryLinks, socialLinks, locations } from '@/data/navigation'
+import { mainNav, socialLinks } from '@/data/navigation'
 
 defineProps<{ isOpen: boolean }>()
 const emit = defineEmits<{ close: [] }>()
+
+const email = ref('')
+const isSubmitted = ref(false)
+const isFocused = ref(false)
+
+function handleSubmit() {
+  if (!email.value.trim()) return
+  isSubmitted.value = true
+  setTimeout(() => {
+    isSubmitted.value = false
+    email.value = ''
+  }, 3000)
+}
 </script>
 
 <template>
   <Transition name="menu">
     <div
       v-if="isOpen"
-      class="fixed inset-0 top-16 md:top-20 z-40 overflow-y-auto"
+      class="fixed inset-0 top-30 md:top-34 z-40 overflow-y-auto"
     >
-      <!-- Red panel -->
       <div class="min-h-full flex flex-col md:flex-row">
+        <!-- Left panel: Navigation -->
         <div class="bg-secondary text-white flex-1 px-6 md:px-12 py-10 md:py-16">
           <div class="max-w-lg mx-auto md:mx-0">
-            <!-- Main links -->
+            <!-- Main nav links -->
             <nav class="mb-10">
               <RouterLink
-                v-for="link in menuLinks"
+                to="/"
+                class="block text-3xl md:text-5xl font-extrabold capitalize mb-3 hover:opacity-80 transition-opacity"
+                @click="emit('close')"
+              >
+                Home
+              </RouterLink>
+              <RouterLink
+                v-for="link in mainNav"
                 :key="link.to"
                 :to="link.to"
                 class="block text-3xl md:text-5xl font-extrabold capitalize mb-3 hover:opacity-80 transition-opacity"
+                :class="link.highlight ? 'text-primary' : ''"
                 @click="emit('close')"
               >
                 {{ link.label }}
               </RouterLink>
             </nav>
-
-            <!-- Secondary links -->
-            <div class="flex flex-wrap gap-x-12 gap-y-1 mb-10">
-              <div>
-                <RouterLink
-                  v-for="link in menuSecondaryLinks"
-                  :key="link.to"
-                  :to="link.to"
-                  class="block text-lg capitalize mb-1 hover:opacity-80 transition-opacity"
-                  @click="emit('close')"
-                >
-                  {{ link.label }}
-                </RouterLink>
-              </div>
-              <div class="hidden md:block">
-                <RouterLink
-                  v-for="link in industryLinks"
-                  :key="link.to"
-                  :to="link.to"
-                  class="block text-lg capitalize mb-1 hover:opacity-80 transition-opacity"
-                  @click="emit('close')"
-                >
-                  {{ link.label }}
-                </RouterLink>
-              </div>
-            </div>
 
             <!-- Social links -->
             <div class="flex flex-wrap gap-4">
@@ -71,33 +67,64 @@ const emit = defineEmits<{ close: [] }>()
           </div>
         </div>
 
-        <!-- Dark panel -->
+        <!-- Right panel: CTA (same as HomePage) -->
         <div class="bg-primary text-white flex-1 px-6 md:px-12 py-10 md:py-16 flex flex-col justify-center">
           <div class="max-w-lg mx-auto md:mx-0">
-            <p class="text-lg mb-3">Got An Idea?</p>
-            <h3 class="text-3xl md:text-4xl font-extrabold mb-6">
-              Let's craft<br />brilliance together!
-            </h3>
-            <RouterLink
-              to="/contact"
-              class="inline-block px-8 py-3 bg-secondary text-white font-bold rounded-full hover:bg-red-600 transition-colors"
-              @click="emit('close')"
-            >
-              Get in touch
-            </RouterLink>
-
-            <!-- Location links -->
-            <div class="flex gap-6 mt-auto pt-10">
-              <RouterLink
-                v-for="loc in locations"
-                :key="loc.country"
-                :to="loc.to"
-                class="text-lg hover:opacity-80 transition-opacity"
-                @click="emit('close')"
-              >
-                {{ loc.country }}
-              </RouterLink>
+            <!-- Icon -->
+            <div class="mb-4">
+              <svg class="w-10 h-10 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+              </svg>
             </div>
+
+            <!-- Heading -->
+            <h3 class="text-3xl md:text-4xl font-extrabold mb-3">
+              Stay in the loop
+            </h3>
+
+            <!-- Subtext -->
+            <p class="text-sm md:text-base text-white/70 mb-6">
+              Drop your email and receive new post alerts. No spam, just fresh content delivered to your inbox.
+            </p>
+
+            <!-- Email Form -->
+            <form @submit.prevent="handleSubmit" class="mb-4">
+              <div
+                class="flex items-center rounded-full transition-all duration-300"
+                :class="isFocused ? 'bg-white shadow-lg shadow-white/10' : 'bg-white/10'"
+              >
+                <input
+                  v-model="email"
+                  type="email"
+                  placeholder="your@email.com"
+                  required
+                  @focus="isFocused = true"
+                  @blur="isFocused = false"
+                  class="flex-1 min-w-0 bg-transparent px-6 py-4 text-base outline-none placeholder:text-white/40"
+                  :class="isFocused ? 'text-primary placeholder:text-gray' : 'text-white'"
+                />
+                <button
+                  type="submit"
+                  :disabled="isSubmitted"
+                  class="shrink-0 mr-1.5 px-6 md:px-8 py-3 rounded-full font-bold text-sm md:text-base transition-all duration-300"
+                  :class="isSubmitted
+                    ? 'bg-green-500 text-white'
+                    : 'bg-secondary text-white hover:bg-red-600 active:scale-95'"
+                >
+                  <span v-if="isSubmitted" class="flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                    </svg>
+                    Subscribed
+                  </span>
+                  <span v-else>Subscribe</span>
+                </button>
+              </div>
+            </form>
+
+            <p class="text-xs text-white/40">
+              Unsubscribe anytime. We respect your privacy.
+            </p>
           </div>
         </div>
       </div>

@@ -13,11 +13,10 @@ useScrollAnimation()
       <div class="max-w-5xl mx-auto px-4">
         <div class="max-w-3xl mx-auto">
           <h1 class="fade-up text-[32px] md:text-[45px] lg:text-[50px] font-extrabold leading-tight mb-3">
-            Reimagining industries through design
+            Technologies I've learned and worked
           </h1>
           <p class="fade-up text-lg md:text-xl text-gray">
-            From agriculture, e-commerce, edtech and enterprise solutions to fintech, healthcare,
-            hospitality, IOT and HR solutions, we have designed it all.
+            Feel free to read any topics you’re interested in and share your feedback to help me improve.
           </p>
         </div>
       </div>
@@ -61,7 +60,7 @@ useScrollAnimation()
                   <p class="text-base text-gray mb-4">
                     {{ tech.description }}
                   </p>
-                  <span class="hover-line text-sm">Read More</span>
+                  <span class="hover-line text-sm self-start">Read More</span>
                 </div>
               </RouterLink>
             </li>
@@ -71,8 +70,8 @@ useScrollAnimation()
     </section>
 
     <!-- Divider -->
-    <div class="py-16 md:py-20 px-3" style="background: rgb(34, 20, 41);">
-      <div class="max-w-5xl mx-auto px-4">
+    <div class="max-w-4xl mx-auto py-12 md:py-20 px-3" style="background: rgb(34, 20, 41);">
+      <div class="max-w-3xl mx-auto px-4">
         <hr class="border-white" />
       </div>
     </div>
